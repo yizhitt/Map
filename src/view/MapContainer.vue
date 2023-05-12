@@ -12,8 +12,8 @@
         </div>
         <div class="mapSearchBox flex1">
           <input type="text" class="mapInput flex1" ref="mapInput" v-model="mapValue" placeholder="请输入大厅名称关键词" />
-          <img class="close" src="../assets/close.png" @click="close" alt="" srcset="">
-          <input type="submit" value="搜索" class="mapSubmit rf" />
+          <img class="close" src="../assets/close.png" @click="close" alt="" srcset="" />
+          <input type="submit" value="搜索" class="mapSubmit rf" @click="searchSubmit" />
         </div>
       </div>
     </div>
@@ -32,7 +32,8 @@ export default {
       mapTypeName: "地理位置",
       radio: "1",
       isMapList: false,
-      mapValue:''
+      mapValue: "",
+      param:''
     };
   },
   created() {},
@@ -111,10 +112,14 @@ export default {
         this.mapTypeName = "大厅名称";
       }
     },
-    close(){
-      this.mapValue=''
-    }
+    close() {
+      this.mapValue = "";
+    },
+    searchSubmit() {
+      this.$store.dispatch("reqMap", this.param);
+    },
   },
+  computed: {},
 };
 </script>
 <style scoped>
