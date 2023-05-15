@@ -10,23 +10,13 @@ module.exports = {
   //assertsDir:'./src/assets',
   //dev环境下，webpack-dev-server相关配置
   devServer: {
-    port: 6200,
-    host: '0.0.0.0',
-    https: false,
-    open: true
+    // 配置代码跨域
+    proxy: {
+      //解决搭投平台地址跨域
+      '/jpaas-zjservice-server': {
+        target: 'https://www.zjzwfw.gov.cn',
+        // pathRewrite: { '^/jpaas-jags-web-server': '' }
+      },
+    }
   },
-  // configureWebpack: {
-  //   module: {
-  //     rules: [
-  //       {
-  //         test: /\.less$/,
-  //         use: [
-  //           'vue-style-loader',
-  //           'css-loader',
-  //           'less-loader'
-  //         ],
-  //       },
-  //     ],
-  //   },
-  // },
 }

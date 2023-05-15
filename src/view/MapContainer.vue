@@ -1,9 +1,9 @@
 <template>
-  <div class="">
+  <div>
     <div id="container"></div>
     <div class="searchMap" style="position: absolute; top: 50px; left: 10px;">
       <div class="mapSearch">
-        <div class="mapType" :class="{ onMapTypeName: isMapList }" @click="toggleMapType">
+        <div class="mapType" :class="{ onMapTypeName: isMapList }" @click="toggleMapType" v-click-outside="hideMapTypeList">
           <div>{{ mapTypeName }}</div>
           <div class="mapTypeList" v-show="isMapList">
             <el-radio v-model="radio" label="1" @change="handleRadioChange">地理位置</el-radio>
@@ -14,6 +14,66 @@
           <input type="text" class="mapInput flex1" ref="mapInput" v-model="mapValue" placeholder="请输入大厅名称关键词" />
           <img class="close" src="../assets/close.png" @click="close" alt="" srcset="" />
           <input type="submit" value="搜索" class="mapSubmit rf" @click="searchSubmit" />
+        </div>
+      </div>
+      <div class="searchContainer">
+        <div class="tips">为您展示<b>阿里巴巴（滨江园区）</b>附近的大厅</div>
+        <div class="optionList">
+          <div class="optionItem">
+            <div class="optionName">5km内</div>
+            <div class="optionName">闲忙</div>
+            <div class="optionName">办事类型</div>
+          </div>
+          <div class="searchList">
+            <div class="searchItem">
+              <div class="searchNum">1</div>
+              <div class="searchCenter">
+                <div class="title">杭州市滨江区长河街道观潮社区公共服务中心</div>
+                <div class="address">
+                  <span>0.5Km</span>
+                  滨江区长河街道观潮社区居民委员会
+                </div>
+                <div class="time">
+                  <span>空闲</span>
+                  夏季：09:00-12:00 14:00-17:00 其他：09:00-12:00 14:00-17:00
+                </div>
+                <div class="categoryName"><span>社保</span><span>社保</span><span>社保</span><span>社保</span></div>
+              </div>
+              <div class="searchNav">导航</div>
+            </div>
+            <div class="searchItem">
+              <div class="searchNum">1</div>
+              <div class="searchCenter">
+                <div class="title">杭州市滨江区长河街道观潮社区公共服务中心</div>
+                <div class="address">
+                  <span>0.5Km</span>
+                  滨江区长河街道观潮社区居民委员会
+                </div>
+                <div class="time">
+                  <span>空闲</span>
+                  夏季：09:00-12:00 14:00-17:00 其他：09:00-12:00 14:00-17:00
+                </div>
+                <div class="categoryName"><span>社保</span><span>社保</span><span>社保</span><span>社保</span></div>
+              </div>
+              <div class="searchNav">导航</div>
+            </div>
+            <div class="searchItem">
+              <div class="searchNum">1</div>
+              <div class="searchCenter">
+                <div class="title">杭州市滨江区长河街道观潮社区公共服务中心</div>
+                <div class="address">
+                  <span>0.5Km</span>
+                  滨江区长河街道观潮社区居民委员会
+                </div>
+                <div class="time">
+                  <span>空闲</span>
+                  夏季：09:00-12:00 14:00-17:00 其他：09:00-12:00 14:00-17:00
+                </div>
+                <div class="categoryName"><span>社保</span><span>社保</span><span>社保</span><span>社保</span></div>
+              </div>
+              <div class="searchNav">导航</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -33,7 +93,7 @@ export default {
       radio: "1",
       isMapList: false,
       mapValue: "",
-      param:''
+      param: "",
     };
   },
   created() {},
@@ -59,7 +119,7 @@ export default {
             viewMode: "3D",
             zoom: 10,
             zooms: [2, 22],
-            center: [105.602725, 37.076636],
+            center: [120.15257500000001, 30.266619],
           });
           // 初始化定位
           const geolocation = new AMap.Geolocation({
@@ -80,6 +140,7 @@ export default {
           // 添加定位插件事件监听
           geolocation.on("complete", (data) => {
             console.log("定位成功:", data, data.position.KL, data.position.kT);
+            this.$store.dispatch("getMap", { longitude: data.position.KL, latitude: data.position.kT });
           });
           geolocation.on("error", (err) => {
             console.log("定位失败:", err);
@@ -94,7 +155,18 @@ export default {
           auto.on("select", select); //注册监听，当选中某条记录时会触发
           function select(e) {
             placeSearch.setCity(e.poi.adcode);
-            placeSearch.search(e.poi.name); //关键字查询查询
+            placeSearch.search(e.poi.name, (status, result) => {
+              // 关键字查询查询成功的回调函数
+              if (status === "complete" && result.info === "OK") {
+                // 获取查询到的第一个地点的经纬度坐标
+                if (result.poiList && result.poiList.pois[0]) {
+                  const position = result.poiList.pois[0].location;
+                  console.log("定位到的地址坐标：", position);
+                }
+              } else {
+                console.log("查询失败");
+              }
+            });
             console.log(e.poi.adcode, e.poi.name);
           }
         })
@@ -104,6 +176,9 @@ export default {
     },
     toggleMapType() {
       this.isMapList = !this.isMapList;
+    },
+    hideMapTypeList() {
+      this.isMapList = false;
     },
     handleRadioChange(value) {
       if (value === "1") {
@@ -221,13 +296,6 @@ a {
 .flex1 {
   flex: 1;
 }
-.home_div {
-  padding: 0px;
-  margin: 0px;
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
 
 #container {
   padding: 0px;
@@ -236,7 +304,9 @@ a {
   height: 100%;
   position: absolute;
 }
-
+.searchMap {
+  background: #fff;
+}
 .mapSearch {
   width: 530px;
   height: 56px;
@@ -289,6 +359,8 @@ a {
   height: auto;
   margin-top: 4px;
   background: #fff;
+  z-index: 999;
+  position: relative;
 }
 .mapTypeList > div {
   width: 104px;
@@ -366,5 +438,141 @@ a {
   font-size: 16px;
   cursor: pointer;
   margin-left: 20px;
+}
+.searchContainer {
+  width: 100%;
+  height: auto;
+  padding: 24px;
+}
+.tips {
+  font-weight: 500;
+  font-size: 16px;
+  color: #686b73;
+  background: url("../assets/position_icon_location.png") no-repeat center left;
+  background-size: 20px 20px;
+  padding-left: 28px;
+  margin-bottom: 20px;
+}
+.tips > b {
+  font-weight: 600;
+  font-size: 16px;
+  color: #0366f1;
+  margin: 0 2px;
+}
+.optionItem {
+  display: flex;
+  justify-content: space-between;
+}
+.optionName {
+  width: 152px;
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  background: rgba(240, 243, 247, 0.4);
+  border: 1px solid #e6edfb;
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+}
+.optionName::before {
+  content: "";
+  position: absolute;
+  top: 18px;
+  right: 30px;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 6px solid #666666;
+}
+.searchItem {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid rgba(225, 225, 225, 0.5);
+  padding: 21.5px 0 20.5px 0;
+  cursor: pointer;
+}
+.searchItem:first-child {
+  border-top: none;
+}
+.searchNum {
+  width: 22px;
+  height: 22px;
+  background: #0366f1;
+  border: 1.8375px solid #ffffff;
+  border-radius: 50%;
+  text-align: center;
+  color: #fff;
+  position: relative;
+  z-index: 9;
+}
+.searchNum::before {
+  content: "";
+  position: absolute;
+  top: 16px;
+  left: 3.5px;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 8px solid #0366f1;
+  z-index: -1;
+}
+.title {
+  font-weight: 600;
+  font-size: 16px;
+  color: #363a44;
+}
+.address,
+.time {
+  font-weight: 400;
+  font-size: 12px;
+  color: #686b73;
+  margin-top: 10px;
+}
+.address > span {
+  position: relative;
+  margin-right: 14px;
+}
+.address > span::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 44px;
+  width: 1px;
+  height: 12px;
+  background: #e1e1e1;
+}
+.time > span {
+  width: 45px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  background: rgba(0, 181, 120, 0.1);
+  border-radius: 1.66667px;
+  display: inline-block;
+  margin-right: 6px;
+}
+.searchNav {
+  font-weight: 500;
+  font-size: 12px;
+  color: #0366f1;
+  background: url("../assets/navigation_icon.png") no-repeat;
+  background-size: 12px 12px;
+  background-position-y: 2px;
+  padding-left: 15px;
+}
+.categoryName > span {
+  width: auto;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  padding: 0 11px;
+  background: #edf4ff;
+  border-radius: 1.66667px;
+  margin-left: 8px;
+  color: #0366f1;
+  font-size: 12px;
+  margin-top: 10px;
+  display: inline-block;
+}
+.categoryName > span:first-child {
+  margin-left: 0;
 }
 </style>
