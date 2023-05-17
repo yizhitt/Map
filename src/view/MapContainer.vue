@@ -3,15 +3,19 @@
     <div id="container"></div>
     <div class="searchMap" style="position: absolute; top: 50px; left: 10px;">
       <div class="mapSearch">
-        <div class="mapType" :class="{ onMapTypeName: isMapList }" @click="toggleMapType" v-click-outside="hideMapTypeList">
-          <div>{{ mapTypeName }}</div>
-          <div class="mapTypeList" v-show="isMapList">
-            <el-radio v-model="radio" label="1" @change="handleRadioChange">地理位置</el-radio>
-            <el-radio v-model="radio" label="2" @change="handleRadioChange">大厅名称</el-radio>
-          </div>
-        </div>
+        <!-- <el-dropdown trigger="click" @command="handleCommand">
+          <span class="el-dropdown-link mapType">{{ mapTypeName }}<i class="el-icon-caret-bottom el-icon--right"></i></span>
+          <el-dropdown-menu slot="dropdown" class="mapTypeList">
+            <el-dropdown-item icon="el-icon-circle-check" command="地理位置">地理位置</el-dropdown-item>
+            <el-dropdown-item icon="el-icon-circle-check" command="大厅名称">大厅名称</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown> -->
+        <el-select v-model="mapTypeValue" class="mapType" placeholder="地理位置">
+          <el-option class="mapTypeList" v-for="item in mapTypeOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+        </el-select>
         <div class="mapSearchBox flex1">
           <input type="text" class="mapInput flex1" ref="mapInput" v-model="mapValue" placeholder="请输入大厅名称关键词" />
+          <!-- <input type="text" class="mapInput flex1" v-model="mapValue" placeholder="请输入大厅名称关键词" /> -->
           <img class="close" src="../assets/close.png" @click="close" alt="" srcset="" />
           <input type="submit" value="搜索" class="mapSubmit rf" @click="searchSubmit" />
         </div>
@@ -20,9 +24,30 @@
         <div class="tips">为您展示<b>阿里巴巴（滨江园区）</b>附近的大厅</div>
         <div class="optionList">
           <div class="optionItem">
-            <div class="optionName">5km内</div>
-            <div class="optionName">闲忙</div>
-            <div class="optionName">办事类型</div>
+            <el-dropdown trigger="click" @command="rangeTextCommand">
+              <span class="el-dropdown-link optionName">{{ rangeText }}<i class="el-icon-caret-bottom el-icon--right"></i></span>
+              <el-dropdown-menu slot="dropdown" class="optionTypeList">
+                <el-dropdown-item icon="el-icon-circle-check" command="距离小于5km">距离小于5km</el-dropdown-item>
+                <el-dropdown-item icon="el-icon-circle-check" command="距离小于2km">距离小于2km</el-dropdown-item>
+                <el-dropdown-item icon="el-icon-circle-check" command="距离小于1km">距离小于1km</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+            <el-dropdown trigger="click" @command="busyTextCommand">
+              <span class="el-dropdown-link optionName">{{ busyText }}<i class="el-icon-caret-bottom el-icon--right"></i></span>
+              <el-dropdown-menu slot="dropdown" class="optionTypeList">
+                <el-dropdown-item icon="el-icon-circle-check" command="闲忙">闲忙</el-dropdown-item>
+                <el-dropdown-item icon="el-icon-circle-check" command="一般">一般</el-dropdown-item>
+                <el-dropdown-item icon="el-icon-circle-check" command="繁忙">繁忙</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+            <el-dropdown trigger="click" @command="workTextCommand">
+              <span class="el-dropdown-link optionName">{{ workText }}<i class="el-icon-caret-bottom el-icon--right"></i></span>
+              <el-dropdown-menu slot="dropdown" class="optionTypeList">
+                <el-dropdown-item icon="el-icon-circle-check" command="健康医保 ">健康医保 </el-dropdown-item>
+                <el-dropdown-item icon="el-icon-circle-check" command="社保">社保</el-dropdown-item>
+                <el-dropdown-item icon="el-icon-circle-check" command="公积金">公积金</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
           </div>
           <div class="searchList">
             <div class="searchItem" v-for="(item, index) in MapList.data" :key="index">
@@ -34,7 +59,7 @@
                   {{ item.hallAddress }}
                 </div>
                 <div class="time">
-                  <span>空闲</span>
+                  <span :class="{ busy: item.busyFlag === 1, same: item.busyFlag === 2, rest: item.busyFlag === 4 }">{{ busyFlag(item.busyFlag) }}</span>
                   {{ item.workTime }}
                 </div>
                 <div class="categoryName">
@@ -61,11 +86,21 @@ export default {
   data() {
     return {
       map: null,
-      mapTypeName: "地理位置",
-      radio: "1",
-      isMapList: false,
+      mapTypeOptions: [
+        {
+          value: "1",
+          label: "地理位置",
+        },
+        {
+          value: "2",
+          label: "大厅名称",
+        },
+      ],
+      mapTypeValue: "地理位置",
+      rangeText: "5km内",
+      busyText: "忙闲",
+      workText: "办事类型",
       mapValue: "",
-      param: "",
       showAll: false,
     };
   },
@@ -147,24 +182,34 @@ export default {
           console.log(e);
         });
     },
-    toggleMapType() {
-      this.isMapList = !this.isMapList;
+    handleCommand(command) {
+      this.mapTypeName = command;
     },
-    hideMapTypeList() {
-      this.isMapList = false;
+    rangeTextCommand(command) {
+      this.rangeText = command;
     },
-    handleRadioChange(value) {
-      if (value === "1") {
-        this.mapTypeName = "地理位置";
-      } else if (value === "2") {
-        this.mapTypeName = "大厅名称";
-      }
+    busyTextCommand(command) {
+      this.busyText = command;
+    },
+    workTextCommand(command) {
+      this.workText = command;
     },
     close() {
       this.mapValue = "";
     },
     searchSubmit() {
       // this.$store.dispatch("reqMap", this.param);
+    },
+    busyFlag(index) {
+      if (index === 1) {
+        return "繁忙";
+      } else if (index === 2) {
+        return "一般";
+      } else if (index === 3) {
+        return "空闲";
+      } else {
+        return "休息";
+      }
     },
     toggleMoreShow() {
       this.showAll = !this.showAll;
@@ -301,17 +346,32 @@ a {
   width: 104px;
   height: 44px;
   line-height: 44px;
-  padding-right: 14px;
   margin: 6px;
   text-align: center;
   background: #f3f5f9;
   border-radius: 4px;
-  font-weight: 500;
-  font-size: 16px;
-  position: relative;
   cursor: pointer;
+  display: inline-block;
 }
-.mapType::before {
+::v-deep .mapType .el-input__inner {
+  border: 0;
+  background: #f3f5f9;
+}
+.mapTypeList {
+  width: 104px;
+  height: 46px;
+  line-height: 46px;
+  padding: 0;
+  text-align: center;
+  font-size: 14px;
+  color: #363a44;
+}
+.mapTypeList .el-dropdown-menu__item {
+  height: 46px;
+  line-height: 46px;
+}
+
+/* .mapType::before {
   content: "";
   position: absolute;
   top: 20px;
@@ -319,8 +379,8 @@ a {
   border-left: 4px solid transparent;
   border-right: 4px solid transparent;
   border-top: 6px solid #666666;
-}
-.onMapTypeName {
+} */
+/* .onMapTypeName {
   border: 1px solid #0366f1;
 }
 .onMapTypeName::before {
@@ -345,6 +405,14 @@ a {
 .mapTypeList > div {
   width: 104px;
   height: 46px;
+} */
+.el-dropdown .el-dropdown-selfdefine:focus:active,
+.el-dropdown .el-dropdown-selfdefine:focus:not(.focusing) {
+  border: 1px solid #007df1;
+}
+.el-dropdown .el-dropdown-selfdefine:focus:active .el-icon-caret-bottom,
+.el-dropdown .el-dropdown-selfdefine:focus:not(.focusing) .el-icon-caret-bottom {
+  transform: rotate(180deg);
 }
 ::v-deep .el-radio {
   margin-right: 0;
@@ -444,17 +512,32 @@ a {
   justify-content: space-between;
 }
 .optionName {
-  width: 152px;
+  width: 152px !important;
   height: 40px;
   line-height: 40px;
+  color: #363a44;
+  font-size: 16px;
   text-align: center;
   background: rgba(240, 243, 247, 0.4);
   border: 1px solid #e6edfb;
   border-radius: 4px;
-  position: relative;
+  /* position: relative; */
   cursor: pointer;
+  display: inline-block;
 }
-.optionName::before {
+.optionTypeList {
+  width: 152px !important;
+  height: auto;
+}
+.optionTypeList .el-dropdown-menu__item {
+  height: 46px;
+  line-height: 46px;
+  padding-left: 12px;
+}
+/* .el-dropdown-menu {
+  width: 152px;
+} */
+/* .optionName::before {
   content: "";
   position: absolute;
   top: 18px;
@@ -462,7 +545,7 @@ a {
   border-left: 4px solid transparent;
   border-right: 4px solid transparent;
   border-top: 6px solid #666666;
-}
+} */
 .searchItem {
   display: flex;
   justify-content: space-between;
@@ -531,6 +614,18 @@ a {
   border-radius: 1.66667px;
   display: inline-block;
   margin-right: 6px;
+}
+.busy {
+  color: #e63633;
+  background: rgba(230, 54, 51, 0.1) !important;
+}
+.same {
+  color: #ff6a2a;
+  background: rgba(255, 106, 42, 0.1) !important;
+}
+.rest {
+  color: #686b73;
+  background: #f3f5f9 !important;
 }
 .searchNav {
   font-weight: 500;
