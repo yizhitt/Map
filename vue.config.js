@@ -15,7 +15,6 @@ module.exports = {
       //解决搭投平台地址跨域
       '/jpaas-zjservice-server': {
         target: 'https://www.zjzwfw.gov.cn',
-        // pathRewrite: { '^/jpaas-jags-web-server': '' }
       },
     }
   },

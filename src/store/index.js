@@ -17,8 +17,7 @@ export default new Vuex.Store({
     async getMap({ commit },param) {
       let result = await reqMap(param)
       if (result.code == 200) {
-        console.log(result, '1');
-        commit('GETMAP', result.data)
+        commit('GETMAP', result.data.data)
       }
     }
   },

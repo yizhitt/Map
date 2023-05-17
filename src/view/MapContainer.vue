@@ -25,51 +25,22 @@
             <div class="optionName">办事类型</div>
           </div>
           <div class="searchList">
-            <div class="searchItem">
-              <div class="searchNum">1</div>
+            <div class="searchItem" v-for="(item, index) in MapList.data" :key="index">
+              <div class="searchNum">{{ index + 1 }}</div>
               <div class="searchCenter">
-                <div class="title">杭州市滨江区长河街道观潮社区公共服务中心</div>
+                <div class="title">{{ item.hallName }}</div>
                 <div class="address">
-                  <span>0.5Km</span>
-                  滨江区长河街道观潮社区居民委员会
+                  <span>{{ item.distance }}</span>
+                  {{ item.hallAddress }}
                 </div>
                 <div class="time">
                   <span>空闲</span>
-                  夏季：09:00-12:00 14:00-17:00 其他：09:00-12:00 14:00-17:00
+                  {{ item.workTime }}
                 </div>
-                <div class="categoryName"><span>社保</span><span>社保</span><span>社保</span><span>社保</span></div>
-              </div>
-              <div class="searchNav">导航</div>
-            </div>
-            <div class="searchItem">
-              <div class="searchNum">1</div>
-              <div class="searchCenter">
-                <div class="title">杭州市滨江区长河街道观潮社区公共服务中心</div>
-                <div class="address">
-                  <span>0.5Km</span>
-                  滨江区长河街道观潮社区居民委员会
+                <div class="categoryName">
+                  <span v-for="(categoryNamesItem, index) in item.categoryNames" :key="index" v-show="showAll || index < 6">{{ categoryNamesItem }}</span>
+                  <span class="categoryMore" v-if="item.categoryNames.length > 6" @click="toggleMoreShow">{{ showAll ? "收起" : "展开" }}</span>
                 </div>
-                <div class="time">
-                  <span>空闲</span>
-                  夏季：09:00-12:00 14:00-17:00 其他：09:00-12:00 14:00-17:00
-                </div>
-                <div class="categoryName"><span>社保</span><span>社保</span><span>社保</span><span>社保</span></div>
-              </div>
-              <div class="searchNav">导航</div>
-            </div>
-            <div class="searchItem">
-              <div class="searchNum">1</div>
-              <div class="searchCenter">
-                <div class="title">杭州市滨江区长河街道观潮社区公共服务中心</div>
-                <div class="address">
-                  <span>0.5Km</span>
-                  滨江区长河街道观潮社区居民委员会
-                </div>
-                <div class="time">
-                  <span>空闲</span>
-                  夏季：09:00-12:00 14:00-17:00 其他：09:00-12:00 14:00-17:00
-                </div>
-                <div class="categoryName"><span>社保</span><span>社保</span><span>社保</span><span>社保</span></div>
               </div>
               <div class="searchNav">导航</div>
             </div>
@@ -81,6 +52,7 @@
 </template>
 <script>
 import AMapLoader from "@amap/amap-jsapi-loader";
+import { mapState } from "vuex";
 window._AMapSecurityConfig = {
   securityJsCode: "c4579f6e0553369c5745e90782ea75e6",
 };
@@ -94,6 +66,7 @@ export default {
       isMapList: false,
       mapValue: "",
       param: "",
+      showAll: false,
     };
   },
   created() {},
@@ -191,10 +164,17 @@ export default {
       this.mapValue = "";
     },
     searchSubmit() {
-      this.$store.dispatch("reqMap", this.param);
+      // this.$store.dispatch("reqMap", this.param);
+    },
+    toggleMoreShow() {
+      this.showAll = !this.showAll;
     },
   },
-  computed: {},
+  computed: {
+    ...mapState({
+      MapList: (state) => state.MapList,
+    }),
+  },
 };
 </script>
 <style scoped>
@@ -440,8 +420,8 @@ a {
   margin-left: 20px;
 }
 .searchContainer {
-  width: 100%;
-  height: auto;
+  width: 530px;
+  height: 790px;
   padding: 24px;
 }
 .tips {
@@ -514,6 +494,9 @@ a {
   border-top: 8px solid #0366f1;
   z-index: -1;
 }
+.searchCenter {
+  width: 410px;
+}
 .title {
   font-weight: 600;
   font-size: 16px;
@@ -558,6 +541,11 @@ a {
   background-position-y: 2px;
   padding-left: 15px;
 }
+.categoryName {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
 .categoryName > span {
   width: auto;
   height: 20px;
@@ -566,7 +554,7 @@ a {
   padding: 0 11px;
   background: #edf4ff;
   border-radius: 1.66667px;
-  margin-left: 8px;
+  margin-right: 8px;
   color: #0366f1;
   font-size: 12px;
   margin-top: 10px;
@@ -574,5 +562,13 @@ a {
 }
 .categoryName > span:first-child {
   margin-left: 0;
+}
+.categoryMore {
+  width: 48px;
+  position: absolute;
+  right: 10px;
+  background: #f3f5f9 !important;
+  border-radius: 2px !important;
+  color: #686b73 !important;
 }
 </style>
