@@ -3,28 +3,28 @@
     <div id="container"></div>
     <div class="searchMap" style="position: absolute; top: 50px; left: 10px;">
       <div class="mapSearch">
-        <!-- <el-dropdown trigger="click" @command="handleCommand">
-          <span class="el-dropdown-link mapType">{{ mapTypeName }}<i class="el-icon-caret-bottom el-icon--right"></i></span>
-          <el-dropdown-menu slot="dropdown" class="mapTypeList">
-            <el-dropdown-item icon="el-icon-circle-check" command="地理位置">地理位置</el-dropdown-item>
-            <el-dropdown-item icon="el-icon-circle-check" command="大厅名称">大厅名称</el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown> -->
-        <el-select v-model="mapTypeValue" class="mapType" placeholder="地理位置">
+        <!-- <el-select v-model="mapTypeValue" class="mapType" placeholder="地理位置">
           <el-option class="mapTypeList" v-for="item in mapTypeOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
-        </el-select>
-        <div class="mapSearchBox flex1">
-          <input type="text" class="mapInput flex1" ref="mapInput" v-model="mapValue" placeholder="请输入大厅名称关键词" />
-          <!-- <input type="text" class="mapInput flex1" v-model="mapValue" placeholder="请输入大厅名称关键词" /> -->
-          <img class="close" src="../assets/close.png" @click="close" alt="" srcset="" />
+        </el-select> -->
+        <a-select default-value="地理位置" class="mapType" @change="mapTypeHandleChange" dropdownClassName="mapTypeList"
+        :dropdownMenuStyle="{color: '#363a44',padding:'0'}"
+        :dropdownStyle="{padding:'0'}">
+          <a-select-option :value="item.value" v-for="item in mapTypeOptions" :key="item.value">
+            {{ item.label }}
+          </a-select-option>
+        </a-select>
+        <!-- <div class="mapSearchBox flex1">
+          <input type="text" class="mapInput flex1" ref="mapInput" v-model="mapValue" placeholder="请输入大厅名称关键词" /> -->
+        <!-- <input type="text" class="mapInput flex1" v-model="mapValue" placeholder="请输入大厅名称关键词" /> -->
+        <!-- <img class="close" src="../assets/close.png" @click="close" alt="" srcset="" />
           <input type="submit" value="搜索" class="mapSubmit rf" @click="searchSubmit" />
-        </div>
+        </div> -->
       </div>
       <div class="searchContainer">
         <div class="tips">为您展示<b>阿里巴巴（滨江园区）</b>附近的大厅</div>
         <div class="optionList">
           <div class="optionItem">
-            <el-dropdown trigger="click" @command="rangeTextCommand">
+            <!-- <el-dropdown trigger="click" @command="rangeTextCommand">
               <span class="el-dropdown-link optionName">{{ rangeText }}<i class="el-icon-caret-bottom el-icon--right"></i></span>
               <el-dropdown-menu slot="dropdown" class="optionTypeList">
                 <el-dropdown-item icon="el-icon-circle-check" command="距离小于5km">距离小于5km</el-dropdown-item>
@@ -47,7 +47,7 @@
                 <el-dropdown-item icon="el-icon-circle-check" command="社保">社保</el-dropdown-item>
                 <el-dropdown-item icon="el-icon-circle-check" command="公积金">公积金</el-dropdown-item>
               </el-dropdown-menu>
-            </el-dropdown>
+            </el-dropdown> -->
           </div>
           <div class="searchList">
             <div class="searchItem" v-for="(item, index) in MapList.data" :key="index">
@@ -78,11 +78,16 @@
 <script>
 import AMapLoader from "@amap/amap-jsapi-loader";
 import { mapState } from "vuex";
+import { Select } from "ant-design-vue";
 window._AMapSecurityConfig = {
   securityJsCode: "c4579f6e0553369c5745e90782ea75e6",
 };
 export default {
   name: "Mapview",
+  components: {
+    "a-select": Select,
+    "a-select-option": Select.Option,
+  },
   data() {
     return {
       map: null,
@@ -100,7 +105,7 @@ export default {
       rangeText: "5km内",
       busyText: "忙闲",
       workText: "办事类型",
-      mapValue: "",
+      mapValue: "地理位置",
       showAll: false,
     };
   },
@@ -182,18 +187,18 @@ export default {
           console.log(e);
         });
     },
-    handleCommand(command) {
-      this.mapTypeName = command;
+    mapTypeHandleChange(value) {
+      console.log(`selected ${value}`);
     },
-    rangeTextCommand(command) {
-      this.rangeText = command;
-    },
-    busyTextCommand(command) {
-      this.busyText = command;
-    },
-    workTextCommand(command) {
-      this.workText = command;
-    },
+    // rangeTextCommand(command) {
+    //   this.rangeText = command;
+    // },
+    // busyTextCommand(command) {
+    //   this.busyText = command;
+    // },
+    // workTextCommand(command) {
+    //   this.workText = command;
+    // },
     close() {
       this.mapValue = "";
     },
@@ -353,89 +358,17 @@ a {
   cursor: pointer;
   display: inline-block;
 }
-::v-deep .mapType .el-input__inner {
+.mapType ::v-deep .ant-select-selection,
+.mapType ::v-deep .ant-select-selection__rendered {
+  height: 44px;
+  line-height: 44px;
+  font-size: 16px;
+  color: #363a44;
   border: 0;
   background: #f3f5f9;
 }
 .mapTypeList {
-  width: 104px;
-  height: 46px;
-  line-height: 46px;
-  padding: 0;
-  text-align: center;
-  font-size: 14px;
-  color: #363a44;
-}
-.mapTypeList .el-dropdown-menu__item {
-  height: 46px;
-  line-height: 46px;
-}
-
-/* .mapType::before {
-  content: "";
-  position: absolute;
-  top: 20px;
-  right: 12px;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 6px solid #666666;
-} */
-/* .onMapTypeName {
-  border: 1px solid #0366f1;
-}
-.onMapTypeName::before {
-  content: "";
-  position: absolute;
-  top: 20px;
-  right: 12px;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-bottom: 6px solid #666666;
-  border-top: none;
-}
-
-.mapTypeList {
-  width: 104px;
-  height: auto;
-  margin-top: 4px;
-  background: #fff;
-  z-index: 999;
-  position: relative;
-}
-.mapTypeList > div {
-  width: 104px;
-  height: 46px;
-} */
-.el-dropdown .el-dropdown-selfdefine:focus:active,
-.el-dropdown .el-dropdown-selfdefine:focus:not(.focusing) {
-  border: 1px solid #007df1;
-}
-.el-dropdown .el-dropdown-selfdefine:focus:active .el-icon-caret-bottom,
-.el-dropdown .el-dropdown-selfdefine:focus:not(.focusing) .el-icon-caret-bottom {
-  transform: rotate(180deg);
-}
-::v-deep .el-radio {
-  margin-right: 0;
-}
-::v-deep .el-radio__inner {
-  border-radius: 2px;
-}
-
-::v-deep .el-radio__input.is-checked .el-radio__inner::after {
-  content: "";
-  width: 8px;
-  height: 3px;
-  border: 2px solid white;
-  border-top: transparent;
-  border-right: transparent;
-  text-align: center;
-  display: block;
-  position: absolute;
-  top: 2px;
-  left: 1px;
-  transform: rotate(-45deg);
-  border-radius: 0px;
-  background: none;
+  margin-top: 2px;
 }
 
 .mapSearchBox {
