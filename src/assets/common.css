@@ -1,7 +1,98 @@
-.mapTypeList >.ant-select-dropdown-content>.ant-select-dropdown-menu /deep/ .ant-select-item {
-  height: 44px !important;
-  line-height: 44px !important;
-  padding: 0 !important;
-  font-size: 16px;
+*,
+*:before,
+*:after {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+html,
+body,
+div,
+dl,
+dt,
+dd,
+ul,
+ol,
+li,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+pre,
+code,
+form,
+fieldset,
+legend,
+input,
+textarea,
+p,
+blockquote,
+th,
+td,
+hr,
+button,
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section,
+img {
+  margin: 0px;
+  padding: 0px;
+  outline: none;
+  border: 0px;
+  -webkit-text-size-adjust: none;
+}
+
+li {
+  list-style: none;
+}
+
+body {
+  text-align: left;
+  font-family: "微软雅黑";
   color: #363a44;
+  background: #fefefe;
+}
+
+a,
+ins {
+  text-decoration: none;
+}
+
+a {
+  color: #363a44;
+}
+
+.clearfix:after {
+  visibility: hidden;
+  display: block;
+  font-size: 0;
+  content: " ";
+  clear: both;
+  height: 0;
+}
+
+.clear {
+  clear: both;
+}
+
+.lf {
+  float: left;
+}
+
+.rf {
+  float: right;
+}
+.flex1 {
+  flex: 1;
 }

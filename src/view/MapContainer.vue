@@ -6,22 +6,24 @@
         <!-- <el-select v-model="mapTypeValue" class="mapType" placeholder="地理位置">
           <el-option class="mapTypeList" v-for="item in mapTypeOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
         </el-select> -->
-        <a-select default-value="地理位置" class="mapType" @change="mapTypeHandleChange" dropdownClassName="mapTypeList"
-        :dropdownMenuStyle="{color: '#363a44',padding:'0'}"
-        :dropdownStyle="{padding:'0'}">
+        <a-select default-value="地理位置" class="mapType" @change="mapTypeHandleChange" dropdownClassName="mapTypeList" :dropdownMenuStyle="{ color: '#363a44', padding: '0' }" :dropdownStyle="{ padding: '0' }">
+          <a-icon slot="suffixIcon" type="caret-down" theme="filled" />
           <a-select-option :value="item.value" v-for="item in mapTypeOptions" :key="item.value">
             {{ item.label }}
           </a-select-option>
         </a-select>
-        <!-- <div class="mapSearchBox flex1">
-          <input type="text" class="mapInput flex1" ref="mapInput" v-model="mapValue" placeholder="请输入大厅名称关键词" /> -->
-        <!-- <input type="text" class="mapInput flex1" v-model="mapValue" placeholder="请输入大厅名称关键词" /> -->
-        <!-- <img class="close" src="../assets/close.png" @click="close" alt="" srcset="" />
+        <div class="mapSearchBox flex1">
+          <input type="text" class="mapInput flex1" v-show="selectedMapType === '1'" ref="mapInput" v-model="mapValue" placeholder="请输入地理位置关键词" />
+          <input type="text" class="mapInput flex1" v-show="selectedMapType === '2'" v-model="mapValue" placeholder="请输入大厅名称关键词" />
+          <img class="close" src="../assets/close.png" @click="close" alt="" srcset="" />
           <input type="submit" value="搜索" class="mapSubmit rf" @click="searchSubmit" />
-        </div> -->
+        </div>
       </div>
       <div class="searchContainer">
-        <div class="tips">为您展示<b>阿里巴巴（滨江园区）</b>附近的大厅</div>
+        <div class="tips">
+          为您展示<b>{{ address }}</b
+          >附近的大厅
+        </div>
         <div class="optionList">
           <div class="optionItem">
             <!-- <el-dropdown trigger="click" @command="rangeTextCommand">
@@ -78,7 +80,7 @@
 <script>
 import AMapLoader from "@amap/amap-jsapi-loader";
 import { mapState } from "vuex";
-import { Select } from "ant-design-vue";
+import { Select, Icon } from "ant-design-vue";
 window._AMapSecurityConfig = {
   securityJsCode: "c4579f6e0553369c5745e90782ea75e6",
 };
@@ -87,6 +89,7 @@ export default {
   components: {
     "a-select": Select,
     "a-select-option": Select.Option,
+    "a-icon": Icon,
   },
   data() {
     return {
@@ -102,11 +105,13 @@ export default {
         },
       ],
       mapTypeValue: "地理位置",
+      selectedMapType: "1",
       rangeText: "5km内",
       busyText: "忙闲",
       workText: "办事类型",
-      mapValue: "地理位置",
+      mapValue: "",
       showAll: false,
+      address: "浙江省人民政府",
     };
   },
   created() {},
@@ -118,7 +123,7 @@ export default {
       AMapLoader.load({
         key: "84ea1dadc02f2621cde9b051ee06e16f", //设置您的key
         version: "2.0",
-        plugins: ["AMap.ToolBar", "AMap.Driving", "AMap.Geolocation", "AMap.PlaceSearch", "AMap.AutoComplete"],
+        plugins: ["AMap.ToolBar", "AMap.Driving", "AMap.Geolocation", "AMap.PlaceSearch", "AMap.AutoComplete", "AMap.Geocoder"],
         AMapUI: {
           version: "1.1",
           plugins: [],
@@ -150,10 +155,22 @@ export default {
           });
           // 将定位插件添加到地图上
           this.map.addControl(geolocation);
+          const geocoder = new AMap.Geocoder({
+            radius: 1000,
+            extensions: "all",
+          });
           // 添加定位插件事件监听
           geolocation.on("complete", (data) => {
             console.log("定位成功:", data, data.position.KL, data.position.kT);
             this.$store.dispatch("getMap", { longitude: data.position.KL, latitude: data.position.kT });
+            // 获取地理名称
+            geocoder.getAddress([data.position.KL, data.position.kT], (status, result) => {
+              if (status === "complete" && result.info === "OK") {
+                // result为对应的地理位置详细信息
+                // console.log(result.regeocode.aois[0].name);
+                this.address = result.regeocode.aois[0].name;
+              }
+            });
           });
           geolocation.on("error", (err) => {
             console.log("定位失败:", err);
@@ -189,6 +206,7 @@ export default {
     },
     mapTypeHandleChange(value) {
       console.log(`selected ${value}`);
+      this.selectedMapType = value;
     },
     // rangeTextCommand(command) {
     //   this.rangeText = command;
@@ -228,105 +246,6 @@ export default {
 };
 </script>
 <style scoped>
-*,
-*:before,
-*:after {
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-}
-
-html,
-body,
-div,
-dl,
-dt,
-dd,
-ul,
-ol,
-li,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-pre,
-code,
-form,
-fieldset,
-legend,
-input,
-textarea,
-p,
-blockquote,
-th,
-td,
-hr,
-button,
-article,
-aside,
-details,
-figcaption,
-figure,
-footer,
-header,
-hgroup,
-menu,
-nav,
-section,
-img {
-  margin: 0px;
-  padding: 0px;
-  outline: none;
-  border: 0px;
-  -webkit-text-size-adjust: none;
-}
-
-li {
-  list-style: none;
-}
-
-body {
-  text-align: left;
-  font-family: "微软雅黑";
-  color: #363a44;
-  background: #fefefe;
-}
-
-a,
-ins {
-  text-decoration: none;
-}
-
-a {
-  color: #363a44;
-}
-
-.clearfix:after {
-  visibility: hidden;
-  display: block;
-  font-size: 0;
-  content: " ";
-  clear: both;
-  height: 0;
-}
-
-.clear {
-  clear: both;
-}
-
-.lf {
-  float: left;
-}
-
-.rf {
-  float: right;
-}
-.flex1 {
-  flex: 1;
-}
-
 #container {
   padding: 0px;
   margin: 0px;
