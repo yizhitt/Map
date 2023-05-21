@@ -26,7 +26,7 @@ requests.interceptors.response.use((res) => {
 }, (error) => {
   // 响应失败的回调函数
   console.log(error)
-  return Promise.reject(new Error('falie'));
+  return Promise.reject(new Error('falied'));
 })
 
 // 对外暴露

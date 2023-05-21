@@ -14,8 +14,17 @@ module.exports = {
     proxy: {
       //解决搭投平台地址跨域
       '/jpaas-zjservice-server': {
-        target: 'https://www.zjzwfw.gov.cn',
+        target: 'https://www.zjzwfw.gov.cn'
       },
+    }
+  },
+  css: {
+    loaderOptions: {
+      less: {
+        lessOptions: {
+          javascriptEnabled: true
+        }
+      }
     }
   },
 }

@@ -76,18 +76,18 @@
 <script>
 import AMapLoader from "@amap/amap-jsapi-loader";
 import { mapState } from "vuex";
-import { Select, Icon, Radio } from "ant-design-vue";
+// import { Select, Icon, Radio } from "ant-design-vue";
 window._AMapSecurityConfig = {
   securityJsCode: "c4579f6e0553369c5745e90782ea75e6",
 };
 export default {
   name: "Mapview",
-  components: {
-    "a-select": Select,
-    "a-icon": Icon,
-    "a-radio": Radio,
-    "a-radio-group": Radio.Group,
-  },
+  // components: {
+  //   "a-select": Select,
+  //   "a-icon": Icon,
+  //   "a-radio": Radio,
+  //   "a-radio-group": Radio.Group,
+  // },
   data() {
     return {
       map: null,

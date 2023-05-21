@@ -1,11 +1,11 @@
 import Vue from 'vue'
 import App from './App.vue'
 import store from './store'
-import 'ant-design-vue/dist/antd.css';
 import './assets/common.css'
 Vue.config.productionTip = false
 
-
+import { Select, Icon, Radio } from "ant-design-vue";
+Vue.use(Select).use(Icon).use(Radio)
 
 new Vue({
   store,
