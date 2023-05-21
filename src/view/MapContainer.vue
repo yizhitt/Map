@@ -3,14 +3,13 @@
     <div id="container"></div>
     <div class="searchMap" style="position: absolute; top: 50px; left: 10px;">
       <div class="mapSearch">
-        <!-- <el-select v-model="mapTypeValue" class="mapType" placeholder="地理位置">
-          <el-option class="mapTypeList" v-for="item in mapTypeOptions" :key="item.value" :label="item.label" :value="item.value"> </el-option>
-        </el-select> -->
-        <a-select default-value="地理位置" class="mapType" @change="mapTypeHandleChange" dropdownClassName="mapTypeList" :dropdownMenuStyle="{ color: '#363a44', padding: '0' }" :dropdownStyle="{ padding: '0' }">
+        <a-select :value="getLabelByValue(selectedMapType)" class="mapType" dropdownClassName="mapTypeList" :dropdownMenuStyle="{ color: '#363a44', padding: '0' }" :dropdownStyle="{ padding: '0' }">
           <a-icon slot="suffixIcon" type="caret-down" theme="filled" />
-          <a-select-option :value="item.value" v-for="item in mapTypeOptions" :key="item.value">
-            {{ item.label }}
-          </a-select-option>
+          <a-radio-group v-model="selectedMapType" slot="dropdownRender" @change="mapTypeHandleChange">
+            <a-radio v-for="item in mapTypeOptions" :key="item.value" :value="item.value">
+              {{ item.label }}
+            </a-radio>
+          </a-radio-group>
         </a-select>
         <div class="mapSearchBox flex1">
           <input type="text" class="mapInput flex1" v-show="selectedMapType === '1'" ref="mapInput" v-model="mapValue" placeholder="请输入地理位置关键词" />
@@ -20,10 +19,7 @@
         </div>
       </div>
       <div class="searchContainer">
-        <div class="tips">
-          为您展示<b>{{ address }}</b
-          >附近的大厅
-        </div>
+        <div class="tips">为您展示<b>{{ address }}</b>附近的大厅</div>
         <div class="optionList">
           <div class="optionItem">
             <!-- <el-dropdown trigger="click" @command="rangeTextCommand">
@@ -80,7 +76,7 @@
 <script>
 import AMapLoader from "@amap/amap-jsapi-loader";
 import { mapState } from "vuex";
-import { Select, Icon } from "ant-design-vue";
+import { Select, Icon, Radio } from "ant-design-vue";
 window._AMapSecurityConfig = {
   securityJsCode: "c4579f6e0553369c5745e90782ea75e6",
 };
@@ -88,8 +84,9 @@ export default {
   name: "Mapview",
   components: {
     "a-select": Select,
-    "a-select-option": Select.Option,
     "a-icon": Icon,
+    "a-radio": Radio,
+    "a-radio-group": Radio.Group,
   },
   data() {
     return {
@@ -204,9 +201,13 @@ export default {
           console.log(e);
         });
     },
-    mapTypeHandleChange(value) {
-      console.log(`selected ${value}`);
-      this.selectedMapType = value;
+    mapTypeHandleChange(e) {
+      console.log(e.target.value);
+      this.selectedMapType = e.target.value;
+    },
+    getLabelByValue(value) {
+      const item = this.mapTypeOptions.find((option) => option.value === value);
+      return item ? item.label : null;
     },
     // rangeTextCommand(command) {
     //   this.rangeText = command;
@@ -236,6 +237,9 @@ export default {
     },
     toggleMoreShow() {
       this.showAll = !this.showAll;
+    },
+    changeVal(e) {
+      console.log(e.target.value);
     },
   },
   computed: {
@@ -289,7 +293,6 @@ export default {
 .mapTypeList {
   margin-top: 2px;
 }
-
 .mapSearchBox {
   height: 100%;
   margin-left: 27px;
