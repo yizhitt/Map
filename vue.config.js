@@ -15,6 +15,7 @@ module.exports = {
       //解决搭投平台地址跨域
       '/jpaas-zjservice-server': {
         target: 'https://www.zjzwfw.gov.cn'
+        // target: 'http://192.168.43.209:8082'
       },
     }
   },

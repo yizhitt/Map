@@ -19,33 +19,36 @@
         </div>
       </div>
       <div class="searchContainer">
-        <div class="tips">为您展示<b>{{ address }}</b>附近的大厅</div>
+        <div class="tips">
+          为您展示<b>{{ address }}</b
+          >附近的大厅
+        </div>
         <div class="optionList">
           <div class="optionItem">
-            <!-- <el-dropdown trigger="click" @command="rangeTextCommand">
-              <span class="el-dropdown-link optionName">{{ rangeText }}<i class="el-icon-caret-bottom el-icon--right"></i></span>
-              <el-dropdown-menu slot="dropdown" class="optionTypeList">
-                <el-dropdown-item icon="el-icon-circle-check" command="距离小于5km">距离小于5km</el-dropdown-item>
-                <el-dropdown-item icon="el-icon-circle-check" command="距离小于2km">距离小于2km</el-dropdown-item>
-                <el-dropdown-item icon="el-icon-circle-check" command="距离小于1km">距离小于1km</el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown>
-            <el-dropdown trigger="click" @command="busyTextCommand">
-              <span class="el-dropdown-link optionName">{{ busyText }}<i class="el-icon-caret-bottom el-icon--right"></i></span>
-              <el-dropdown-menu slot="dropdown" class="optionTypeList">
-                <el-dropdown-item icon="el-icon-circle-check" command="闲忙">闲忙</el-dropdown-item>
-                <el-dropdown-item icon="el-icon-circle-check" command="一般">一般</el-dropdown-item>
-                <el-dropdown-item icon="el-icon-circle-check" command="繁忙">繁忙</el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown>
-            <el-dropdown trigger="click" @command="workTextCommand">
-              <span class="el-dropdown-link optionName">{{ workText }}<i class="el-icon-caret-bottom el-icon--right"></i></span>
-              <el-dropdown-menu slot="dropdown" class="optionTypeList">
-                <el-dropdown-item icon="el-icon-circle-check" command="健康医保 ">健康医保 </el-dropdown-item>
-                <el-dropdown-item icon="el-icon-circle-check" command="社保">社保</el-dropdown-item>
-                <el-dropdown-item icon="el-icon-circle-check" command="公积金">公积金</el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown> -->
+            <a-select :value="rangeLabelByValue(selectedRange)" class="optionName" dropdownClassName="mapTypeList" :dropdownMenuStyle="{ color: '#363a44', padding: '0' }" :dropdownStyle="{ padding: '0' }">
+              <a-icon slot="suffixIcon" type="caret-down" theme="filled" />
+              <a-radio-group v-model="selectedRange" slot="dropdownRender" @change="rangeTypeHandleChange">
+                <a-radio v-for="item in rangeValueOptions" :key="item.value" :value="item.value">
+                  {{ item.label }}
+                </a-radio>
+              </a-radio-group>
+            </a-select>
+            <a-select :value="busyLabelByValue(selectedBusy)" class="optionName" dropdownClassName="mapTypeList" :dropdownMenuStyle="{ color: '#363a44', padding: '0' }" :dropdownStyle="{ padding: '0' }">
+              <a-icon slot="suffixIcon" type="caret-down" theme="filled" />
+              <a-radio-group v-model="selectedBusy" slot="dropdownRender" @change="busyTypeHandleChange">
+                <a-radio v-for="item in busyValueOptions" :key="item.value" :value="item.value">
+                  {{ item.label }}
+                </a-radio>
+              </a-radio-group>
+            </a-select>
+            <a-select :value="workLabelByValue(selectedWork)" class="optionName" dropdownClassName="mapTypeList" :dropdownMenuStyle="{ color: '#363a44', padding: '0' }" :dropdownStyle="{ padding: '0' }">
+              <a-icon slot="suffixIcon" type="caret-down" theme="filled" />
+              <a-radio-group v-model="selectedWork" slot="dropdownRender" @change="workTypeHandleChange">
+                <a-radio v-for="item in workValueOptions" :key="item.value" :value="item.value">
+                  {{ item.label }}
+                </a-radio>
+              </a-radio-group>
+            </a-select>
           </div>
           <div class="searchList">
             <div class="searchItem" v-for="(item, index) in MapList.data" :key="index">
@@ -76,21 +79,15 @@
 <script>
 import AMapLoader from "@amap/amap-jsapi-loader";
 import { mapState } from "vuex";
-// import { Select, Icon, Radio } from "ant-design-vue";
 window._AMapSecurityConfig = {
   securityJsCode: "c4579f6e0553369c5745e90782ea75e6",
 };
 export default {
   name: "Mapview",
-  // components: {
-  //   "a-select": Select,
-  //   "a-icon": Icon,
-  //   "a-radio": Radio,
-  //   "a-radio-group": Radio.Group,
-  // },
   data() {
     return {
       map: null,
+      mapTypeValue: "地理位置",
       mapTypeOptions: [
         {
           value: "1",
@@ -101,17 +98,60 @@ export default {
           label: "大厅名称",
         },
       ],
-      mapTypeValue: "地理位置",
       selectedMapType: "1",
-      rangeText: "5km内",
-      busyText: "忙闲",
-      workText: "办事类型",
+      rangeValue: "5km内",
+      rangeValueOptions: [
+        {
+          value: "1",
+          label: "距离小于5km",
+        },
+        {
+          value: "2",
+          label: "距离小于2km",
+        },
+        {
+          value: "3",
+          label: "距离小于1km",
+        },
+      ],
+      selectedRange: "1",
+      busyValue: "忙闲",
+      busyValueOptions: [
+        {
+          value: "1",
+          label: "闲忙",
+        },
+        {
+          value: "2",
+          label: "一般",
+        },
+        {
+          value: "3",
+          label: "繁忙",
+        },
+      ],
+      selectedBusy: "1",
+      workValue: "办事类型",
+      workValueOptions: [
+        {
+          value: "1",
+          label: "医疗健康",
+        },
+        {
+          value: "2",
+          label: "社保",
+        },
+        {
+          value: "3",
+          label: "公积金",
+        },
+      ],
+      selectedWork: "1",
       mapValue: "",
       showAll: false,
       address: "浙江省人民政府",
     };
   },
-  created() {},
   mounted() {
     this.initAMap();
   },
@@ -164,8 +204,8 @@ export default {
             geocoder.getAddress([data.position.KL, data.position.kT], (status, result) => {
               if (status === "complete" && result.info === "OK") {
                 // result为对应的地理位置详细信息
-                // console.log(result.regeocode.aois[0].name);
-                this.address = result.regeocode.aois[0].name;
+                // console.log(result.regeocode);
+                this.address = result.regeocode.formattedAddress;
               }
             });
           });
@@ -202,22 +242,33 @@ export default {
         });
     },
     mapTypeHandleChange(e) {
-      console.log(e.target.value);
       this.selectedMapType = e.target.value;
     },
     getLabelByValue(value) {
       const item = this.mapTypeOptions.find((option) => option.value === value);
       return item ? item.label : null;
     },
-    // rangeTextCommand(command) {
-    //   this.rangeText = command;
-    // },
-    // busyTextCommand(command) {
-    //   this.busyText = command;
-    // },
-    // workTextCommand(command) {
-    //   this.workText = command;
-    // },
+    rangeTypeHandleChange(e) {
+      this.selectedRange = e.target.value;
+    },
+    rangeLabelByValue(value) {
+      const item = this.rangeValueOptions.find((option) => option.value === value);
+      return item ? item.label : null;
+    },
+    busyTypeHandleChange(e) {
+      this.selectedRange = e.target.value;
+    },
+    busyLabelByValue(value) {
+      const item = this.busyValueOptions.find((option) => option.value === value);
+      return item ? item.label : null;
+    },
+    workTypeHandleChange(e) {
+      this.selectedWork = e.target.value;
+    },
+    workLabelByValue(value) {
+      const item = this.workValueOptions.find((option) => option.value === value);
+      return item ? item.label : null;
+    },
     close() {
       this.mapValue = "";
     },
@@ -237,9 +288,6 @@ export default {
     },
     toggleMoreShow() {
       this.showAll = !this.showAll;
-    },
-    changeVal(e) {
-      console.log(e.target.value);
     },
   },
   computed: {
@@ -376,31 +424,20 @@ export default {
   background: rgba(240, 243, 247, 0.4);
   border: 1px solid #e6edfb;
   border-radius: 4px;
-  /* position: relative; */
   cursor: pointer;
   display: inline-block;
 }
-.optionTypeList {
-  width: 152px !important;
-  height: auto;
+.optionName ::v-deep .ant-select-selection,
+.optionName ::v-deep .ant-select-selection__rendered {
+  height: 40px;
+  line-height: 40px;
+  font-size: 16px;
+  color: #363a44;
+  border: 0;
+  margin-left: 0;
+  background: #f3f5f9;
 }
-.optionTypeList .el-dropdown-menu__item {
-  height: 46px;
-  line-height: 46px;
-  padding-left: 12px;
-}
-/* .el-dropdown-menu {
-  width: 152px;
-} */
-/* .optionName::before {
-  content: "";
-  position: absolute;
-  top: 18px;
-  right: 30px;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 6px solid #666666;
-} */
+
 .searchItem {
   display: flex;
   justify-content: space-between;
