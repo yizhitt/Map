@@ -13,7 +13,7 @@
         </a-select>
         <div class="mapSearchBox flex1">
           <input type="text" class="mapInput flex1" v-show="selectedMapType === '1'" ref="mapInput" v-model="mapValue" placeholder="请输入地理位置关键词" />
-          <input type="text" class="mapInput flex1" v-show="selectedMapType === '2'" v-model="mapValue" placeholder="请输入大厅名称关键词" />
+          <input type="text" class="mapInput flex1" v-show="selectedMapType === '2'" v-model="mapNameValue" placeholder="请输入大厅名称关键词" />
           <img class="close" src="../assets/close.png" @click="close" alt="" srcset="" />
           <input type="submit" value="搜索" class="mapSubmit rf" @click="searchSubmit" />
         </div>
@@ -51,7 +51,7 @@
             </a-select>
           </div>
           <div class="searchList">
-            <div class="searchItem" v-for="(item, index) in MapList.data" :key="index">
+            <div class="searchItem" v-for="(item, index) in MapList.data" :key="index" @click="getCoordinates(item.latitude, item.longitude)">
               <div class="searchNum">{{ index + 1 }}</div>
               <div class="searchCenter">
                 <div class="title">{{ item.hallName }}</div>
@@ -99,10 +99,12 @@ export default {
         },
       ],
       selectedMapType: "1",
-      rangeValue: "5km内",
+      getMap: { longitude: "", latitude: "", hallKeyWord: "", distance: "" },
+      mapValue: "",
+      mapNameValue: "",
       rangeValueOptions: [
         {
-          value: "1",
+          value: "5",
           label: "距离小于5km",
         },
         {
@@ -110,12 +112,11 @@ export default {
           label: "距离小于2km",
         },
         {
-          value: "3",
+          value: "1",
           label: "距离小于1km",
         },
       ],
-      selectedRange: "1",
-      busyValue: "忙闲",
+      selectedRange: "5",
       busyValueOptions: [
         {
           value: "1",
@@ -131,7 +132,6 @@ export default {
         },
       ],
       selectedBusy: "1",
-      workValue: "办事类型",
       workValueOptions: [
         {
           value: "1",
@@ -147,7 +147,6 @@ export default {
         },
       ],
       selectedWork: "1",
-      mapValue: "",
       showAll: false,
       address: "浙江省人民政府",
     };
@@ -172,8 +171,8 @@ export default {
         .then((AMap) => {
           this.map = new AMap.Map("container", {
             viewMode: "3D",
-            zoom: 10,
-            zooms: [2, 22],
+            zoom: 18,
+            zooms: [3, 18],
             center: [120.15257500000001, 30.266619],
           });
           // 初始化定位
@@ -189,6 +188,18 @@ export default {
             showCircle: true, // 定位成功后用圆圈表示定位精度范围，默认：true
             panToLocation: true, // 定位成功后将定位到的位置作为地图中心点，默认：true
             zoomToAccuracy: true, // 定位成功后调整地图视野范围以适应地图精度圈范围，默认：false
+            // 替换当前位置ICON
+            markerOptions: {
+              // 使用自定义图标
+              icon: new AMap.Icon({
+                // 指定自定义图标的图片 URL
+                image: "../assets/logo.png",
+                // 图标尺寸
+                size: new AMap.Size(32, 32), // 根据实际尺寸调整
+                // 图标偏移量，根据图标的设计决定
+                offset: new AMap.Pixel(-16, -16), // 根据实际偏移量调整
+              }),
+            },
           });
           // 将定位插件添加到地图上
           this.map.addControl(geolocation);
@@ -199,7 +210,9 @@ export default {
           // 添加定位插件事件监听
           geolocation.on("complete", (data) => {
             console.log("定位成功:", data, data.position.KL, data.position.kT);
-            this.$store.dispatch("getMap", { longitude: data.position.KL, latitude: data.position.kT });
+            this.getMap.longitude = data.position.KL;
+            this.getMap.latitude = data.position.kT;
+            this.$store.dispatch("getMap", this.getMap);
             // 获取地理名称
             geocoder.getAddress([data.position.KL, data.position.kT], (status, result) => {
               if (status === "complete" && result.info === "OK") {
@@ -210,11 +223,14 @@ export default {
             });
           });
           geolocation.on("error", (err) => {
-            console.log("定位失败:", err);
+            console.log("定位失败显示默认数据", err);
+            this.getMap.longitude = "120.15257500000001";
+            this.getMap.latitude = "30.266619";
+            this.$store.dispatch("getMap", this.getMap);
           });
           // 开始定位
           geolocation.getCurrentPosition();
-          // 初始化AMap.AutoComplete
+          // 初始化AMap.AutoComplete，输入提示
           var auto = new AMap.AutoComplete({ input: this.$refs.mapInput });
           var placeSearch = new AMap.PlaceSearch({
             map: this.map,
@@ -234,7 +250,25 @@ export default {
                 console.log("查询失败");
               }
             });
-            console.log(e.poi.adcode, e.poi.name);
+            console.log(e.poi.adcode, e.poi.name, "加个未知打印");
+          }
+          // 在地图上标注marker
+          for (let i = 0; i < this.MapList.data.length; i++) {
+            const item = this.MapList.data[i];
+            if (i < 4) {
+              const marker = new AMap.Marker({
+                position: new AMap.LngLat(item.longitude, item.latitude),
+                map: this.map,
+                content: "<div class='marker'><span class='markerNum'>" + (i + 1) + "</span></div>",
+              });
+              this.map.add(marker);
+            } else {
+              const marker = new AMap.Marker({
+                position: new AMap.LngLat(item.longitude, item.latitude),
+                map: this.map,
+              });
+              this.map.add(marker);
+            }
           }
         })
         .catch((e) => {
@@ -249,7 +283,10 @@ export default {
       return item ? item.label : null;
     },
     rangeTypeHandleChange(e) {
+      console.log(e.target.value, "dianji");
+      this.getMap.distance = e.target.value;
       this.selectedRange = e.target.value;
+      this.$store.dispatch("getMap", this.getMap);
     },
     rangeLabelByValue(value) {
       const item = this.rangeValueOptions.find((option) => option.value === value);
@@ -271,9 +308,11 @@ export default {
     },
     close() {
       this.mapValue = "";
+      this.mapNameValue = "";
     },
     searchSubmit() {
-      // this.$store.dispatch("reqMap", this.param);
+      this.getMap.hallKeyWord = this.mapNameValue;
+      this.$store.dispatch("getMap", this.getMap);
     },
     busyFlag(index) {
       if (index === 1) {
@@ -288,6 +327,10 @@ export default {
     },
     toggleMoreShow() {
       this.showAll = !this.showAll;
+    },
+    getCoordinates(latitude, longitude) {
+      console.log(latitude, longitude, "点击");
+      this.map.setCenter([longitude, latitude]);
     },
   },
   computed: {
@@ -557,5 +600,12 @@ export default {
   background: #f3f5f9 !important;
   border-radius: 2px !important;
   color: #686b73 !important;
+}
+::v-deep .markerNum {
+  height: 16px;
+  line-height: 16px;
+  font-size: 26px;
+  color: #fff;
+  text-align: center;
 }
 </style>
